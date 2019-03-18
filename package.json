@@ -1,0 +1,48 @@
+{
+  "name": "qwerty",
+  "version": "1.0.0",
+  "description": "This is a description.",
+  "main": "backend/server.js",
+  "author": "Tundra Fizz",
+  "license": "ISC",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "start": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "axios": "latest",
+    "body-parser": "latest",
+    "cookie-parser": "latest",
+    "cors": "^2.8.5",
+    "express": "latest",
+    "formidable": "latest",
+    "js-yaml": "latest",
+    "mysql2": "latest",
+    "vue": "^2.6.6",
+    "vue-router": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "^3.5.0",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "otherDeps": {
+    "moment": "latest",
+    "node-sass-middleware": "latest",
+    "ejs": "latest"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TundraFizz/TODO"
+  }
+}
