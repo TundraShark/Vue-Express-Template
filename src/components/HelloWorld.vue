@@ -4,7 +4,20 @@
     <div>
       <div><input type="button" value="Click Me" v-on:click="doSomething"> <input type="button" value="Change Text" v-on:click="changeText"></div>
       <template v-if="customData">
-        {{ customData }}
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+          </tr>
+          <template v-for="i of customData">
+            <tr>
+              <td>{{ i.id   }}</td>
+              <td>{{ i.name }}</td>
+              <td>{{ i.age  }}</td>
+            </tr>
+          </template>
+        </table>
       </template>
       <template v-else>
         <div>Default text</div>
@@ -51,13 +64,12 @@ export default {
       var result = (await axios.get(uri, options))["data"]["data"][0];
       console.log(result);
     },
-    changeText: async (s) => {
+    changeText: async function() {
       console.log("=======================================");
-      console.log(s);
       var data = (await axios.get("http://localhost/get-data"))["data"];
       var people = data["people"];
       console.log(people);
-      s.customData = people;
+      this.customData = people;
       for(var i of people){
         console.log(i);
       }
