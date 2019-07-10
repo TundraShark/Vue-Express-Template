@@ -1,14 +1,17 @@
 {
-  "name": "qwerty",
+  "name": "vue-express-template",
   "version": "1.0.0",
   "description": "This is a description.",
-  "main": "backend/server.js",
   "author": "Tundra Fizz",
+  "main": "backend/server.js",
   "license": "ISC",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "start": "nodemon backend/server.js"
+    "vue_local": "set local=true;vue-cli-service serve --mode development",
+    "api_local": "set mode=local&& nodemon backend/server.js",
+    "api_dev": "set mode=dev&& node backend/server.js",
+    "api_prod": "set mode=prod&& node backend/server.js",
+    "build_dev": "vue-cli-service build --mode development",
+    "build_prod": "vue-cli-service build --mode production"
   },
   "dependencies": {
     "axios": "latest",
@@ -19,8 +22,10 @@
     "formidable": "latest",
     "js-yaml": "latest",
     "mysql2": "latest",
+    "numeral": "^2.0.6",
     "vue": "^2.6.6",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vuex": "^3.1.0"
   },
   "devDependencies": {
     "@vue/cli-service": "^3.5.0",

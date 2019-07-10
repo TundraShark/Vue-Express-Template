@@ -26,10 +26,10 @@ app.use(cors());                                     // Allow CORS
 
 module.exports.data = data;
 module.exports.db   = mysql.createPool({
-  "host"           : data["mysql"][mode]["host"],
-  "user"           : data["mysql"][mode]["user"],
-  "password"       : data["mysql"][mode]["password"],
-  "database"       : data["mysql"][mode]["database"],
+  "host"           : data[mode]["mysql"]["host"],
+  "user"           : data[mode]["mysql"]["user"],
+  "password"       : data[mode]["mysql"]["password"],
+  "database"       : data[mode]["mysql"]["database"],
   "connectionLimit": 20
 }).promise();
 require("./routes.js"); // Include web routes third

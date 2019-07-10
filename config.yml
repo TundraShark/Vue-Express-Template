@@ -1,19 +1,21 @@
-mysql:
-  # The host can be one of three options:
-  # 1. localhost
-  # 2. IP address of a remote server
-  # 3. Name of a MySQL Docker service
-  local:
+local:
+  mysql:
+    # The host can be one of three options:
+    # 1. localhost
+    # 2. IP address of a remote server
+    # 3. Name of a MySQL Docker service
     host: "localhost"
     user: "root"
     password: ""
     database: "yolo_swag"
-  dev:
+dev:
+  mysql:
     host: "ENTER_HOSTNAME_HERE"
     user: "ENTER_USERNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
     database: "ENTER_DATABASE_NAME_HERE"
-  prod:
+prod:
+  mysql:
     host: "ENTER_HOSTNAME_HERE"
     user: "ENTER_USERNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
