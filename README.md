@@ -52,3 +52,35 @@ Axios v0.19.0
 https://github.com/axios/axios
 https://github.com/axios/axios/blob/master/dist/axios.min.js
 ```
+
+1. Route 53
+2. Certificate Manager
+3. Create an S3 bucket: example.com
+   Permissions -> Bucket Policy
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::example.com/*"
+        }
+    ]
+}
+```
+
+4. Create a CloudFront distribution (Web)
+   Origin Domain Name: example.com.s3-website-us-west-2.amazonaws.com
+   Origin ID: example.com
+   Alternate Domain Names (CNAMEs): example.com
+   SSL Certificate: Custom SSL Certificate -> example.com
+   Viewer Protocol Policy: Redirect HTTP to HTTPS
+   Compress Objects Automatically: Yes
+   Create Custom Error Response:
+     -> HTTP Error Code: 404
+     -> Customize Error Response: Yes
+     -> Response Page Path: /index.html
+     -> HTTP Response Code: 200
