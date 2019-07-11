@@ -6,7 +6,8 @@
   "main": "backend/server.js",
   "license": "ISC",
   "scripts": {
-    "vue_local": "set local=true;vue-cli-service serve --mode development",
+    "vue_local_mac": "set local=true;vue-cli-service serve --mode development",
+    "vue_local": "set local=true&&vue-cli-service serve --mode development",
     "api_local": "set mode=local&& nodemon backend/server.js",
     "api_dev": "set mode=dev&& node backend/server.js",
     "api_prod": "set mode=prod&& node backend/server.js",
