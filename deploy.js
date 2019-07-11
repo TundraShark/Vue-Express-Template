@@ -56,6 +56,10 @@ async function Main() {
 
     try {
       data = await s3.deleteObjects(params).promise();
+
+      for(let object of data["Deleted"]) {
+        console.log("Deleted:", object["Key"]);
+      }
     } catch(error) {
       console.log("ERROR: Deleting objects in S3");
       console.log(error);
@@ -65,51 +69,57 @@ async function Main() {
     console.log(`The bucket ${bucketName} is already empty`);
   }
 
-  console.log("========== Deleted Objects ==========");
-
-  for(let object of data["Deleted"]) {
-    console.log(object["Key"]);
-  }
+  await Upload();
 }
 
-async function ReadDirectory() {
-  let names = await readdir("dist");
+let fileCollection = [];
 
-  console.log(names);
+async function ReadDirectory(passedInPath) {
+  let names = await readdir(passedInPath);
+
+  for(let fileName of names) {
+    let filePath = path.join(passedInPath, fileName);
+    let isDirectory = fs.lstatSync(filePath).isDirectory();
+
+    if(isDirectory) {
+      await ReadDirectory(filePath);
+    }
+
+    fileCollection.push(filePath);
+  }
 }
 
 async function Upload() {
-  let names = await readdir("dist");
+  await ReadDirectory("dist");
 
-  console.log(names);
+  for(let file of fileCollection) {
+    // let fileName = path.basename(file);
+    let fileName = file.split("\\");
+    fileName.shift();
+    fileName = fileName.join("/");
 
-  for(let fileName of names) {
-    let filePath = path.join("dist", fileName);
-    let khsdf = fs.lstatSync(filePath).isDirectory();
-    console.log(filePath, khsdf);
-  }
+    let isDirectory = fs.lstatSync(file).isDirectory();
 
-  return;
-
-  try {
-    let folderPath = path.join(__dirname, "dist");
-    let filePath = path.join(folderPath, fileName);
-
-    // ignore if directory
-    if (fs.lstatSync(filePath).isDirectory()) {
-      console.log("THIS IS A DIRECTORY:", filePath);
+    if(isDirectory) {
+      continue;
     }
 
-    console.log(folderPath);
-  } catch(error) {
-    console.log("ERROR: Uploading objects to S3");
-    console.log(error);
-    process.exit();
+    let fileData = fs.readFileSync(file);
+    // let fileData = fs.readFileSync(filePath, "utf-8");
+
+    let qwe;
+    try {
+      await s3.putObject({Bucket: bucketName, Key: fileName, Body: fileData}).promise();
+      console.log("Uploaded:", fileName);
+    } catch(error) {
+      console.log("ERROR: Uploading an object to S3");
+      console.log(error);
+      process.exit();
+    }
   }
 }
 
-// Main();
-Upload();
+Main();
 
 // vue-cli-service build --mode production
 
