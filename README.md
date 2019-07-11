@@ -84,3 +84,17 @@ https://github.com/axios/axios/blob/master/dist/axios.min.js
      -> Customize Error Response: Yes
      -> Response Page Path: /index.html
      -> HTTP Response Code: 200
+
+Route 53 => List => ListHostedZonesByName
+Route 53 => Write => ChangeResourceRecordSets
+Certificate Manager => Read => DescribeCertificate
+Certificate Manager => Write => RequestCertificate
+S3 => List => ListBucket
+S3 => Read => GetBucketWebsite
+S3 => Read => GetObject
+S3 => Write => CreateBucket
+S3 => Write => PutBucketWebsite
+S3 => Write => PutObject
+S3 => Write => DeleteObject
+S3 => Permissions management => PutBucketPolicy
+CloudFront => Write => CreateDistribution
