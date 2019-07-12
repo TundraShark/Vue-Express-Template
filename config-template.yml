@@ -20,3 +20,9 @@ prod:
     user: "ENTER_USERNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
     database: "ENTER_DATABASE_NAME_HERE"
+aws:
+  region: "ENTER_REGION_HERE"
+  accessKeyId: "ENTER_ACCESS_KEY_HERE"
+  secretAccessKey: "ENTER_SECRET_ACCESS_KEY_HERE"
+  bucketName: "ENTER_BUCKET_NAME_HERE"
+  domainName: "ENTER_DOMAIN_NAME_HERE"
