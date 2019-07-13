@@ -87,9 +87,10 @@ https://github.com/axios/axios/blob/master/dist/axios.min.js
 
 Route 53 => List => ListHostedZonesByName
 Route 53 => Write => ChangeResourceRecordSets
+Certificate Manager => List => ListCertificates
 Certificate Manager => Read => DescribeCertificate
 Certificate Manager => Write => RequestCertificate
-S3 => List => ListBucket
+S3 => List => ListAllMyBuckets
 S3 => Read => GetBucketWebsite
 S3 => Read => GetObject
 S3 => Write => CreateBucket
