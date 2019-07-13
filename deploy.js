@@ -1,27 +1,23 @@
-// Configurable settings
-const accessKeyId     = "x";
-const secretAccessKey = "x";
-const bucketName      = "mudksssi.ps";
-const domainName      = "mudki.ps";
-const region          = "us-west-2";
-
-const aws = require("aws-sdk");
-
-aws.config = new aws.Config();
-aws.config.region = region;
-if(aws.config.credentials) {
-  aws.config.credentials.accessKeyId     = accessKeyId;
-  aws.config.credentials.secretAccessKey = secretAccessKey;
-}
-aws.config.accessKeyId     = accessKeyId;
-aws.config.secretAccessKey = secretAccessKey;
-
 const fs = require("fs");
+const aws = require("aws-sdk");
 const path = require("path");
 const util = require("util");
+const data = require("js-yaml").safeLoad(fs.readFileSync("config.yml", "utf-8"));
 const sleep = util.promisify(setTimeout);
 const readdir = util.promisify(fs.readdir);
 const exec = util.promisify(require("child_process").exec);
+
+const region          = data["aws"]["region"];
+const accessKeyId     = data["aws"]["accessKeyId"];
+const secretAccessKey = data["aws"]["secretAccessKey"];
+const domainName      = data["aws"]["domainName"];
+const bucketName      = data["aws"]["bucketName"];
+
+aws.config = new aws.Config({
+  region: region,
+  accessKeyId: accessKeyId,
+  secretAccessKey: secretAccessKey
+});
 
 // AWS SDK libraries
 let acm        = new aws.ACM({region: "us-east-1"});
@@ -32,20 +28,13 @@ let cloudfront = new aws.CloudFront();
 // Misc
 let cloudFrontDomainName = null;
 let hostedZoneId = null;
-let certificate = {
-  arn   : null,
-  status: null,
-  type  : null,
-  name  : null,
-  value : null
-};
+let certificate = {arn: null, status: null, type: null, name: null, value: null};
 
 async function GetRoute53HostedZoneIdFromDomainName() {
   let result;
-  let params = {DNSName: domainName};
 
   try {
-    result = await route53.listHostedZonesByName(params).promise();
+    result = await route53.listHostedZonesByName({DNSName: domainName}).promise();
   } catch(error) {
     console.log("ERROR: Getting Route53 information");
     console.log(error);
@@ -72,26 +61,69 @@ async function GetRoute53HostedZoneIdFromDomainName() {
   hostedZoneId = hostedZone["Id"].split("/hostedzone/")[1];
 }
 
-async function RequestCertificate() {
+async function CheckCertificate() {
   let result;
+  let certificateArn;
 
   try {
-    result = await acm.requestCertificate({"DomainName": domainName, "ValidationMethod": "DNS"}).promise();
+    result = await acm.listCertificates({MaxItems: 1000}).promise();
   } catch(error) {
-    console.log("ERROR: Requesting a new SSL certificate");
+    console.log("ERROR: Checking SSL certificates");
     console.log(error);
     process.exit();
   }
 
-  certificate["arn"] = result["CertificateArn"];
-}
+  for(let obj of result["CertificateSummaryList"]) {
+    if(obj["DomainName"] == domainName) {
+      certificate["arn"] = obj["CertificateArn"];
+      break;
+    }
+  }
 
-async function GetCertificateDetails() {
-  let result, validationOptions;
+  // Create the certificate if it wasn't found
+  if(certificate["arn"] == null) {
+    process.stdout.write("Creating a new certificate... ");
 
-  // Since the certificate was just created, it might take a couple seconds for "ResourceRecord"
-  // to be populated by AWS, so just keep trying until we get the data that's needed
-  while(true) {
+    try {
+      result = await acm.requestCertificate({"DomainName": domainName, "ValidationMethod": "DNS"}).promise();
+    } catch(error) {
+      console.log("ERROR: Requesting a new SSL certificate");
+      console.log(error);
+      process.exit();
+    }
+
+    certificate["arn"] = result["CertificateArn"];
+    console.log("done");
+    process.stdout.write("Waiting for the resource records... ");
+
+    // Since the certificate was just created, it might take a couple seconds for "ResourceRecord"
+    // to be populated by AWS, so just keep trying until we get the data that's needed
+    while(true) {
+      try {
+        result = await acm.describeCertificate({CertificateArn: certificate["arn"]}).promise();
+      } catch(error) {
+        console.log("ERROR: Getting SSL certificate information");
+        console.log(error);
+        process.exit();
+      }
+
+      if("ResourceRecord" in result["Certificate"]["DomainValidationOptions"][0]) {
+        let validationOptions = result["Certificate"]["DomainValidationOptions"][0];
+        certificate["status"] = validationOptions["ValidationStatus"]; // PENDING_VALIDATION, SUCCESS, FAILED
+        certificate["type"]   = validationOptions["ResourceRecord"]["Type"];
+        certificate["name"]   = validationOptions["ResourceRecord"]["Name"];
+        certificate["value"]  = validationOptions["ResourceRecord"]["Value"];
+        break;
+      } else {
+        await sleep(1000);
+      }
+    }
+
+    console.log("done");
+
+  } else {
+    console.log("Existing certificate found");
+
     try {
       result = await acm.describeCertificate({CertificateArn: certificate["arn"]}).promise();
     } catch(error) {
@@ -100,22 +132,16 @@ async function GetCertificateDetails() {
       process.exit();
     }
 
-    validationOptions = result["Certificate"]["DomainValidationOptions"][0];
-
-    if(!(ResourceRecord in validationOptions)) {
-      await sleep(1000);
-      continue;
-    }
-
-    certificate["status"] = validationOptions["ValidationStatus"];
+    // No need to check for "ResourceRecord" because the certificate was't just created
+    let validationOptions = result["Certificate"]["DomainValidationOptions"][0];
+    certificate["status"] = validationOptions["ValidationStatus"]; // PENDING_VALIDATION, SUCCESS, FAILED
     certificate["type"]   = validationOptions["ResourceRecord"]["Type"];
     certificate["name"]   = validationOptions["ResourceRecord"]["Name"];
     certificate["value"]  = validationOptions["ResourceRecord"]["Value"];
-    break;
   }
 }
 
-async function WaitForCertificateToBeValidated() {
+async function ValidateCertificate() {
   async function UpdateRoute53Record(action) {
     // action must be either "CREATE" or "DELETE"
     let params = {
@@ -144,10 +170,20 @@ async function WaitForCertificateToBeValidated() {
     }
   }
 
+  if(certificate["status"] == "FAILED") {
+    console.log("ERROR: The SSL certificate is in a FAILED state");
+    process.exit();
+  }
+
+  if(certificate["status"] == "SUCCESS") {
+    console.log("The SSL certificate is already validated");
+  }
+
   if(certificate["status"] == "PENDING_VALIDATION") {
-    console.log("Creating Route 53 record for SSL validation");
+    process.stdout.write("Creating Route 53 record for SSL validation... ");
     await UpdateRoute53Record("CREATE");
-    console.log("Waiting for the SSL certificate to be validated...");
+    console.log("done");
+    process.stdout.write("Waiting for the SSL certificate to be validated... ");
 
     try {
       await acm.waitFor("certificateValidated", {CertificateArn: certificate["arn"]}).promise();
@@ -157,25 +193,50 @@ async function WaitForCertificateToBeValidated() {
       process.exit();
     }
 
-    console.log("...validated!");
-    console.log("Deleting Route 53 record for SSL validation");
+    console.log("done");
+    process.stdout.write("Deleting Route 53 record for SSL validation... ");
     UpdateRoute53Record("DELETE");
-  } else {
-    console.log("The SSL certificate is already validated");
+    console.log("done");
   }
 }
 
 async function CreateS3Bucket() {
   let result;
+  let bucketExists = false;
+
+  try {
+    result = await s3.listBuckets({}).promise();
+  } catch(error) {
+    console.log("ERROR: Getting S3 buckets");
+    console.log(error);
+    process.exit();
+  }
+
+
+  for(let bucket of result["Buckets"]) {
+    if(bucketName == bucket["Name"]) {
+      console.log("Bucket already exists");
+      bucketExists = true;
+      break;
+    }
+  }
+
+  if(bucketExists) {
+    return;
+  }
+
+  process.stdout.write("Creating a new bucket... ");
 
   try {
     result = await s3.createBucket({Bucket: bucketName}).promise();
   } catch(error) {
     console.log("ERROR: Creating an S3 bucket");
-    // console.log(error);
-    // process.exit();
+    console.log(error);
+    process.exit();
   }
 
+  console.log("done");
+  process.stdout.write("Setting the bucket's website configuration... ");
   // Now that the S3 bucket has been created, its website configuration needs to be set
 
   try {
@@ -186,6 +247,8 @@ async function CreateS3Bucket() {
     process.exit();
   }
 
+  console.log("done");
+  process.stdout.write("Setting the bucket's policy to be public... ");
   // Set the bucket policy to be publicly accessible
 
   try {
@@ -206,7 +269,7 @@ async function CreateS3Bucket() {
     process.exit();
   }
 
-  console.log(result);
+  console.log("done");
 }
 
 async function CreateCloudFrontDistribution() {
@@ -234,7 +297,7 @@ async function CreateCloudFrontDistribution() {
             CustomOriginConfig: {
               HTTPPort: 80,
               HTTPSPort: 443,
-              OriginProtocolPolicy: "https-only"
+              OriginProtocolPolicy: "http-only"
             }
           }]
         },
@@ -304,18 +367,18 @@ async function CreateRoute53RecordForCloudFront() {
 }
 
 async function New() {
-  /* 1. Create an SSL certificate
-   * 2. Todo
-   * 3. Todo
-   * 4. Todo
+  /* 1. Get the hosted zone ID for the domain name
+   * 2. Check status of SSL certificate
+   * 3. Check status of S3 bucket
+   * 4. Check status of  CloudFront distribution
    * 5. Todo
    */
   await GetRoute53HostedZoneIdFromDomainName();
-  await RequestCertificate();
-  await GetCertificateDetails();
-  await WaitForCertificateToBeValidated();
+  await CheckCertificate();
+  await ValidateCertificate();
   await CreateS3Bucket();
   await CreateCloudFrontDistribution();
+  return;
   await CreateRoute53RecordForCloudFront();
 }
 
