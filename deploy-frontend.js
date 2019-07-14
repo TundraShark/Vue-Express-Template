@@ -26,8 +26,9 @@ let s3         = new aws.S3();
 let cloudfront = new aws.CloudFront();
 
 // Misc
-let cloudFrontDomainName = null;
 let hostedZoneId = null;
+let currentRecordAlias = null;
+let cloudFrontDomainName = null;
 let certificate = {arn: null, status: null, type: null, name: null, value: null};
 
 async function GetRoute53HostedZoneIdFromDomainName() {
@@ -57,8 +58,27 @@ async function GetRoute53HostedZoneIdFromDomainName() {
     process.exit();
   }
 
-  // AWS returns a string such as /hostedzone/ABCDEFGHI12345 which has garbage in it that needs to be removed
   hostedZoneId = hostedZone["Id"].split("/hostedzone/")[1];
+
+  try {
+    result = await route53.listResourceRecordSets({HostedZoneId: hostedZoneId, StartRecordName: domainName, StartRecordType: "A"}).promise();
+  } catch(error) {
+    console.log("ERROR: Getting Route53 information");
+    console.log(error);
+    process.exit();
+  }
+
+  let resourceRecordSet = result["ResourceRecordSets"][0];
+
+  if(resourceRecordSet["Name"] == `${domainName}.` && resourceRecordSet["Type"] == "A") { // AWS puts an extra period (.) at the end of every domain name
+    let aliasTarget = resourceRecordSet["AliasTarget"];
+
+    if(aliasTarget == undefined) {
+      currentRecordAlias = "BAD_ALIAS";
+    } else {
+      currentRecordAlias = aliasTarget["DNSName"];
+    }
+  }
 }
 
 async function CheckCertificate() {
@@ -115,15 +135,12 @@ async function CheckCertificate() {
         certificate["value"]  = validationOptions["ResourceRecord"]["Value"];
         break;
       } else {
-        await sleep(1000);
+        await sleep(1000); // Wait one second
       }
     }
 
     console.log("done");
-
   } else {
-    console.log("Existing certificate found");
-
     try {
       result = await acm.describeCertificate({CertificateArn: certificate["arn"]}).promise();
     } catch(error) {
@@ -170,13 +187,13 @@ async function ValidateCertificate() {
     }
   }
 
+  if(certificate["status"] == "SUCCESS") {
+    return;
+  }
+
   if(certificate["status"] == "FAILED") {
     console.log("ERROR: The SSL certificate is in a FAILED state");
     process.exit();
-  }
-
-  if(certificate["status"] == "SUCCESS") {
-    console.log("The SSL certificate is already validated");
   }
 
   if(certificate["status"] == "PENDING_VALIDATION") {
@@ -202,7 +219,6 @@ async function ValidateCertificate() {
 
 async function CreateS3Bucket() {
   let result;
-  let bucketExists = false;
 
   try {
     result = await s3.listBuckets({}).promise();
@@ -212,17 +228,10 @@ async function CreateS3Bucket() {
     process.exit();
   }
 
-
   for(let bucket of result["Buckets"]) {
     if(bucketName == bucket["Name"]) {
-      console.log("Bucket already exists");
-      bucketExists = true;
-      break;
+      return; // Bucket already exists
     }
-  }
-
-  if(bucketExists) {
-    return;
   }
 
   process.stdout.write("Creating a new bucket... ");
@@ -237,7 +246,6 @@ async function CreateS3Bucket() {
 
   console.log("done");
   process.stdout.write("Setting the bucket's website configuration... ");
-  // Now that the S3 bucket has been created, its website configuration needs to be set
 
   try {
     result = await s3.putBucketWebsite({Bucket: bucketName, WebsiteConfiguration: {IndexDocument: {Suffix: "index.html"}}}).promise();
@@ -249,7 +257,6 @@ async function CreateS3Bucket() {
 
   console.log("done");
   process.stdout.write("Setting the bucket's policy to be public... ");
-  // Set the bucket policy to be publicly accessible
 
   try {
     let policy = `{
@@ -276,57 +283,77 @@ async function CreateCloudFrontDistribution() {
   let result;
 
   try {
-    let params = {
-      DistributionConfig: {
-        CallerReference: (new Date).getTime().toString(),
-        Enabled: true,
-        Comment: "",
-        ViewerCertificate: {
-          ACMCertificateArn: certificate["arn"],
-          SSLSupportMethod: "sni-only"
-        },
-        Aliases: {
-          Quantity: 1,
-          Items: [domainName]
-        },
-        Origins: {
-          Quantity: 1,
-          Items: [{
-            DomainName: `${bucketName}.s3-website-${region}.amazonaws.com`,
-            Id: domainName,
-            CustomOriginConfig: {
-              HTTPPort: 80,
-              HTTPSPort: 443,
-              OriginProtocolPolicy: "http-only"
-            }
-          }]
-        },
-        DefaultCacheBehavior: {
-          ViewerProtocolPolicy: "redirect-to-https",
-          TargetOriginId: domainName,
-          Compress: true,
-          MinTTL: 0,
-          ForwardedValues: {
-            QueryString: false,
-            Cookies: {
-              Forward: "none"
-            }
-          },
-          TrustedSigners: {
-            Enabled: false,
-            Quantity: 0
-          },
-        },
-        CustomErrorResponses: {
-          Quantity: 1,
-          Items: [{
-            ErrorCode: 404,
-            ResponseCode: "200",
-            ResponsePagePath: "/index.html"
-          }]
-        }
+    result = await cloudfront.listDistributions().promise();
+  } catch(error) {
+    console.log("ERROR: Creating CloudFront distribution");
+    console.log(error);
+    process.exit();
+  }
+
+  for(let distribution of result["DistributionList"]["Items"]) {
+    for(let aliasICPRecordal of distribution["AliasICPRecordals"]) {
+      if(aliasICPRecordal["CNAME"] == domainName) {
+        cloudFrontDomainName = distribution["DomainName"];
+        return;
       }
-    };
+    }
+  }
+
+  let params = {
+    DistributionConfig: {
+      CallerReference: (new Date).getTime().toString(),
+      Enabled: true,
+      Comment: "",
+      ViewerCertificate: {
+        ACMCertificateArn: certificate["arn"],
+        SSLSupportMethod: "sni-only"
+      },
+      Aliases: {
+        Quantity: 1,
+        Items: [domainName]
+      },
+      Origins: {
+        Quantity: 1,
+        Items: [{
+          DomainName: `${bucketName}.s3-website-${region}.amazonaws.com`,
+          Id: domainName,
+          CustomOriginConfig: {
+            HTTPPort: 80,
+            HTTPSPort: 443,
+            OriginProtocolPolicy: "http-only"
+          }
+        }]
+      },
+      DefaultCacheBehavior: {
+        ViewerProtocolPolicy: "redirect-to-https",
+        TargetOriginId: domainName,
+        Compress: true,
+        MinTTL: 0,
+        ForwardedValues: {
+          QueryString: false,
+          Cookies: {
+            Forward: "none"
+          }
+        },
+        TrustedSigners: {
+          Enabled: false,
+          Quantity: 0
+        },
+      },
+      CustomErrorResponses: {
+        Quantity: 1,
+        Items: [{
+          ErrorCode: 404,
+          ResponseCode: "200",
+          ResponsePagePath: "/index.html"
+        }]
+      }
+    }
+  };
+
+  process.stdout.write("Creating CloudFront distribution... ");
+
+  try {
     result = await cloudfront.createDistribution(params).promise();
   } catch(error) {
     console.log("ERROR: Creating CloudFront distribution");
@@ -334,6 +361,7 @@ async function CreateCloudFrontDistribution() {
     process.exit();
   }
 
+  console.log("done");
   cloudFrontDomainName = result["Distribution"]["DomainName"];
 }
 
@@ -357,6 +385,17 @@ async function CreateRoute53RecordForCloudFront() {
     }
   };
 
+  if(currentRecordAlias == `${cloudFrontDomainName}.`) {
+    return;
+  }
+
+  if(currentRecordAlias) {
+    process.stdout.write("Deleting current Route 53 record... ");
+    console.log("done");
+  }
+
+  process.stdout.write("Creating new Route 53 record... ");
+
   try {
     await route53.changeResourceRecordSets(params).promise();
   } catch(error) {
@@ -364,21 +403,16 @@ async function CreateRoute53RecordForCloudFront() {
     console.log(error);
     process.exit();
   }
+
+  console.log("done");
 }
 
 async function New() {
-  /* 1. Get the hosted zone ID for the domain name
-   * 2. Check status of SSL certificate
-   * 3. Check status of S3 bucket
-   * 4. Check status of  CloudFront distribution
-   * 5. Todo
-   */
   await GetRoute53HostedZoneIdFromDomainName();
   await CheckCertificate();
   await ValidateCertificate();
   await CreateS3Bucket();
   await CreateCloudFrontDistribution();
-  return;
   await CreateRoute53RecordForCloudFront();
 }
 

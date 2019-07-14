@@ -86,6 +86,7 @@ https://github.com/axios/axios/blob/master/dist/axios.min.js
      -> HTTP Response Code: 200
 
 Route 53 => List => ListHostedZonesByName
+Route 53 => List => ListResourceRecordSets
 Route 53 => Write => ChangeResourceRecordSets
 Certificate Manager => List => ListCertificates
 Certificate Manager => Read => DescribeCertificate
@@ -98,4 +99,5 @@ S3 => Write => PutBucketWebsite
 S3 => Write => PutObject
 S3 => Write => DeleteObject
 S3 => Permissions management => PutBucketPolicy
+CloudFront => List => ListDistributions
 CloudFront => Write => CreateDistribution
