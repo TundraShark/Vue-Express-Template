@@ -1,12 +1,9 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require("path");
 
-if(process.env.local)
-  process.env.VUE_APP_BACKEND = "http://localhost";
-else if(process.env.NODE_ENV == "development")
-  process.env.VUE_APP_BACKEND = "https://api.dev.example.com";
-else if(process.env.NODE_ENV == "production")
-  process.env.VUE_APP_BACKEND = "https://api.example.com";
+if     (process.env.local)                     process.env.VUE_APP_BACKEND = "http://localhost";
+else if(process.env.NODE_ENV == "development") process.env.VUE_APP_BACKEND = "https://api.dev.example.com";
+else if(process.env.NODE_ENV == "production")  process.env.VUE_APP_BACKEND = "https://api.example.com";
 
 module.exports = {
   devServer: {

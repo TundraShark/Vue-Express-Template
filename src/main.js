@@ -28,7 +28,8 @@ Vue.mixin({
   methods: {
     Read : function(key     ){return this.$store.state[key]},
     Write: function(key, val){this.$store.commit(key, val)}
-  }
+  },
+  data: function(){return {API: process.env.VUE_APP_BACKEND}}
 });
 
 // Define data that will be used across the entire application

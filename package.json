@@ -6,7 +6,7 @@
   "main": "backend/server.js",
   "license": "ISC",
   "scripts": {
-    "vue_local_mac": "set local=true;vue-cli-service serve --mode development",
+    "vue_local_mac": "local=true vue-cli-service serve --mode development",
     "vue_local": "set local=true&&vue-cli-service serve --mode development",
     "api_local": "set mode=local&& nodemon backend/server.js",
     "api_dev": "set mode=dev&& node backend/server.js",
@@ -15,28 +15,26 @@
     "build_prod": "vue-cli-service build --mode production"
   },
   "dependencies": {
-    "axios": "latest",
-    "body-parser": "latest",
-    "cookie-parser": "latest",
+    "axios": "^0.19.0",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
-    "express": "latest",
-    "formidable": "latest",
-    "js-yaml": "latest",
-    "mysql2": "latest",
+    "express": "^4.17.1",
+    "formidable": "^1.2.1",
+    "js-yaml": "^3.13.1",
+    "moment": "^2.24.0",
+    "mysql2": "^1.6.5",
     "numeral": "^2.0.6",
     "vue": "^2.6.6",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.491.0",
     "@vue/cli-service": "^3.5.0",
+    "aws-sdk": "^2.491.0",
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.5.21"
-  },
-  "otherDeps": {
-    "moment": "latest",
-    "node-sass-middleware": "latest",
-    "ejs": "latest"
   },
   "postcss": {
     "plugins": {

@@ -1,11 +1,41 @@
-var app = require("./server.js");
-var db  = require("./server.js").db;
-var fs  = require("fs"); // File system library
+const app    = require("./server.js");
+const db     = require("./server.js").db;
+const config = require("./server.js").config;
+const fs     = require("fs");
+const axios  = require("axios");
+axios.defaults.validateStatus = false;
 
-app.post("/add-person", (req, res) => {
-  AppendToFile("data/people.csv", req.body);
-  var people = CsvToObject("data/people.csv");
-  res.json(people);
+let index = 3;
+let sampleData = {
+  "1": "The key of this is 1",
+  "2": "The key of this is 2",
+  "3": "The key of this is 3"
+};
+
+app.get("/data", async (req, res) => {
+  res.json(sampleData);
+});
+
+app.post("/data", (req, res) => {
+  index++;
+
+  sampleData[index] = `The key of this is ${index}`;
+  res.json(sampleData);
+});
+
+app.put("/data", (req, res) => {
+  for(let key in sampleData) {
+    sampleData[key] = "The value has been reset";
+  }
+
+  res.json(sampleData);
+});
+
+app.delete("/data", (req, res) => {
+  let firstKey = Object.keys(sampleData)[0];
+  delete sampleData[firstKey];
+
+  res.json(sampleData);
 });
 
 app.get("/", async (req, res) => {
@@ -16,18 +46,9 @@ app.get("/", async (req, res) => {
   });
 });
 
-app.get("/get-data", async (req, res) => {
-  var [people] = await db.query("SELECT id, name, age FROM sample");
-
-  res.json({
-    "people": people
-  });
-});
-
 app.get("/about", (req, res) => {
-  var people = CsvToObject("data/people.csv");
   res.json({
-    "people": people
+    "hello": "world"
   });
 });
 
