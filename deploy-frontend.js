@@ -2,6 +2,7 @@ const fs = require("fs");
 const aws = require("aws-sdk");
 const path = require("path");
 const util = require("util");
+const mime = require("mime");
 const data = require("js-yaml").safeLoad(fs.readFileSync("config.yml", "utf-8"));
 const sleep = util.promisify(setTimeout);
 const readdir = util.promisify(fs.readdir);
@@ -29,6 +30,7 @@ let cloudfront = new aws.CloudFront();
 let hostedZoneId = null;
 let currentRecordAlias = null;
 let cloudFrontDomainName = null;
+let cloudFrontDistributionId = null;
 let certificate = {arn: null, status: null, type: null, name: null, value: null};
 
 async function GetRoute53HostedZoneIdFromDomainName() {
@@ -294,6 +296,7 @@ async function CreateCloudFrontDistribution() {
     for(let aliasICPRecordal of distribution["AliasICPRecordals"]) {
       if(aliasICPRecordal["CNAME"] == domainName) {
         cloudFrontDomainName = distribution["DomainName"];
+        cloudFrontDistributionId = distribution["Id"];
         return;
       }
     }
@@ -440,7 +443,7 @@ async function Update() {
 
   if(objects.length) {
     params = {
-      Bucket: "mudki.ps",
+      Bucket: bucketName,
       Delete: {Objects: objects}
     };
 
@@ -462,29 +465,29 @@ async function Update() {
   await Upload();
 }
 
-let fileCollection = [];
-
-async function ReadDirectory(passedInPath) {
-  let names = await readdir(passedInPath);
-
-  for(let fileName of names) {
-    let filePath = path.join(passedInPath, fileName);
-    let isDirectory = fs.lstatSync(filePath).isDirectory();
-
-    if(isDirectory) {
-      await ReadDirectory(filePath);
-    }
-
-    fileCollection.push(filePath);
-  }
-}
-
 async function Upload() {
+  async function ReadDirectory(passedInPath) {
+    let names = await readdir(passedInPath);
+
+    for(let fileName of names) {
+      let filePath = path.join(passedInPath, fileName);
+      let isDirectory = fs.lstatSync(filePath).isDirectory();
+
+      if(isDirectory) {
+        await ReadDirectory(filePath);
+      }
+
+      fileCollection.push(filePath);
+    }
+  }
+
+  let fileCollection = [];
   await ReadDirectory("dist");
 
   for(let file of fileCollection) {
-    // let fileName = path.basename(file);
+    let contentType = mime.getType(file);
     let fileName = file.split("\\");
+
     fileName.shift();
     fileName = fileName.join("/");
 
@@ -495,11 +498,11 @@ async function Upload() {
     }
 
     let fileData = fs.readFileSync(file);
+    // let fileData = fs.readFileSync(file, "utf-8");
     // let fileData = fs.readFileSync(filePath, "utf-8");
 
-    let qwe;
     try {
-      await s3.putObject({Bucket: bucketName, Key: fileName, Body: fileData}).promise();
+      await s3.putObject({Bucket: bucketName, Key: fileName, Body: fileData, ContentType: contentType}).promise();
       console.log("Uploaded:", fileName);
     } catch(error) {
       console.log("ERROR: Uploading an object to S3");
@@ -509,9 +512,31 @@ async function Upload() {
   }
 }
 
+async function CreateInvalidation() {
+  let params = {
+    DistributionId: cloudFrontDistributionId,
+    InvalidationBatch: {
+      CallerReference: (new Date).getTime().toString(),
+      Paths: {
+        Quantity: 1,
+        Items: ["/*"]
+      }
+    }
+  };
+
+  try {
+    await cloudfront.createInvalidation(params).promise();
+  } catch(error) {
+    console.log("ERROR: Creating CloudFront invalidation");
+    console.log(error);
+    process.exit();
+  }
+}
+
 async function Main() {
   await New();
-  // await Update();
+  await Update();
+  await CreateInvalidation();
 }
 
 Main();

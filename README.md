@@ -85,6 +85,7 @@ https://github.com/axios/axios/blob/master/dist/axios.min.js
      -> Response Page Path: /index.html
      -> HTTP Response Code: 200
 
+```
 Route 53 => List => ListHostedZonesByName
 Route 53 => List => ListResourceRecordSets
 Route 53 => Write => ChangeResourceRecordSets
@@ -92,6 +93,7 @@ Certificate Manager => List => ListCertificates
 Certificate Manager => Read => DescribeCertificate
 Certificate Manager => Write => RequestCertificate
 S3 => List => ListAllMyBuckets
+S3 => List => ListBucket
 S3 => Read => GetBucketWebsite
 S3 => Read => GetObject
 S3 => Write => CreateBucket
@@ -101,3 +103,38 @@ S3 => Write => DeleteObject
 S3 => Permissions management => PutBucketPolicy
 CloudFront => List => ListDistributions
 CloudFront => Write => CreateDistribution
+CloudFront => Write => CreateInvalidation
+```
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "route53:ListHostedZonesByName",
+                "route53:ListResourceRecordSets",
+                "route53:ChangeResourceRecordSets",
+                "acm:ListCertificates",
+                "acm:DescribeCertificate",
+                "acm:RequestCertificate",
+                "s3:ListAllMyBuckets",
+                "s3:ListBucket",
+                "s3:GetBucketWebsite",
+                "s3:GetObject",
+                "s3:CreateBucket",
+                "s3:PutBucketWebsite",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:PutBucketPolicy",
+                "cloudfront:ListDistributions",
+                "cloudfront:CreateDistribution",
+                "cloudfront:CreateInvalidation"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
