@@ -21,41 +21,28 @@
 export default {
   data: function() {
     return {
-      data: null
+      data: []
     }
   },
   created: async function() {
     this.data = {"testing": "Click on the \"Get Data\" button to get sample data"};
-
-    this.$store.subscribe((mutation) => {
-      if(mutation.type == "gohere") {
-        this.discordAuthUrl = mutation.payload;
-      } else if(mutation.type = "data") {
-        this.data = mutation.payload;
-        console.log(this.data);
-      }
-    });
   },
   methods: {
     GetData: async function() {
-      let data = await axios.get(`${this.API}/data`);
-      this.data = data.data;
-      console.log(data.data);
+      this["data"] = await this.Get("data");
+      console.log(data);
     },
     PostData: async function() {
-      let data = await axios.post(`${this.API}/data`);
-      this.data = data.data;
-      console.log(data.data);
+      let data = await this.Post("data", {"qwe": 123, "asd": 456});
+      console.log(data);
     },
     PutData: async function() {
-      let data = await axios.put(`${this.API}/data`);
-      this.data = data.data;
-      console.log(data.data);
+      let data = await this.Put("data", {"uio": 789, "jkl": 555});
+      console.log(data);
     },
     DeleteData: async function() {
-      let data = await axios.delete(`${this.API}/data`);
-      this.data = data.data;
-      console.log(data.data);
+      let data = await this.Delete("data");
+      console.log(data);
     }
   }
 }
