@@ -14,16 +14,19 @@ global:
     database: "ENTER_DATABASE_NAME_HERE"
 
 local:
+  origin: "http://localhost:8080"
   mysql:
     host: "ENTER_HOSTNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
 
 dev:
+  origin: "https://dev.example.com"
   mysql:
     host: "ENTER_HOSTNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
 
 prod:
+  origin: "https://example.com"
   mysql:
     host: "ENTER_HOSTNAME_HERE"
     password: "ENTER_PASSWORD_HERE"
