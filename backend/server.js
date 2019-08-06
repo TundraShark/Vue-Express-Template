@@ -1,31 +1,30 @@
-var express      = require("express");              // Express
-var fs           = require("fs");                   // File system
-var yaml         = require("js-yaml");              // Parse .yaml files
-var mysql        = require("mysql2");               // MySQL Database
-var bodyParser   = require("body-parser");          // Allows you to read POST data
-var cookieParser = require("cookie-parser");        // Cookies
-var cors         = require("cors");                 // Cross-origin resource sharing
-var app          = module.exports = express();      // Define the application
+const express      = require("express");              // Server
+const bodyParser   = require("body-parser");          // Enables reading POST data
+const cookieParser = require("cookie-parser");        // Cookies
+const cors         = require("cors");                 // Cross-origin resource sharing
+const fs           = require("fs");                   // File system
+const yaml         = require("js-yaml");              // Parse .yaml files
+const mysql        = require("mysql2");               // MySQL Database
+const app          = module.exports = express();      // Define the application
+const configObj    = yaml.safeLoad(fs.readFileSync("config.yml", "utf-8"));
+const mode         = (process.env.mode == "prod" || process.env.mode == "dev" ? process.env.mode : "local");
+const config       = require("lodash/fp/merge")(configObj["global"], configObj[mode]);
 
-var config = yaml.safeLoad(fs.readFileSync("config.yml", "utf-8"));
-
-// Get the environment mode; this should be either "local", "dev", or "prod"
-var mode = process.env.mode || "local";
-
-app.set("views", "./views");                         // Define the views directory
-app.use(express.static("./static"));                 // Define the static directory
-app.use(bodyParser.json());                          // Setting for bodyParser
-app.use(bodyParser.urlencoded({extended: true}));    // Setting for bodyParser
-app.use(cookieParser());                             // Enable cookie parsing
-app.use(cors());                                     // Allow CORS
+app.use(express.static("./static"));                // Define the static directory
+app.use(bodyParser.json());                         // Setting for bodyParser
+app.use(bodyParser.urlencoded({"extended": true})); // Setting for bodyParser
+app.use(cookieParser());                            // Enable cookie parsing
+app.use(cors({origin: config["origin"], credentials: true})); // Allow CORS
 
 module.exports.config = config;
-module.exports.db   = mysql.createPool({
-  "host"           : config[mode]["mysql"]["host"],
-  "user"           : config[mode]["mysql"]["user"],
-  "password"       : config[mode]["mysql"]["password"],
-  "database"       : config[mode]["mysql"]["database"],
+module.exports.db     = mysql.createPool({
+  "host"           : config["mysql"]["host"],
+  "user"           : config["mysql"]["user"],
+  "password"       : config["mysql"]["password"],
+  "database"       : config["mysql"]["database"],
   "connectionLimit": 20
 }).promise();
-require("./routes.js"); // Include web routes third
-app.listen(80);         // Start the server
+
+// Include the routes/API endpoints and then start the server
+require("./routes.js");
+app.listen(80);

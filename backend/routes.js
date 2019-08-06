@@ -5,51 +5,40 @@ const fs     = require("fs");
 const axios  = require("axios");
 axios.defaults.validateStatus = false;
 
-let index = 3;
-let sampleData = {
-  "1": "The key of this is 1",
-  "2": "The key of this is 2",
-  "3": "The key of this is 3"
-};
+app.use(async function(req, res, next) {
+  config["secretToken"] = "^VVdum87ujqqxUSF@C*ofA6d3c#k*vxje6&g7iXtNgLnVvj#Kl%uDq!9YbdE2FGI";
+  console.log(">>>", config["secretToken"]);
+  console.log(">>>", req["cookies"]["secret-token"]);
+
+  if(req["cookies"]["secret-token"] == config["secretToken"]) {
+    next();
+  } else {
+    res.status(401).send();
+  }
+});
 
 app.get("/data", async (req, res) => {
-  res.json(sampleData);
+  console.log("GET");
+  let [results] = await db.query("SELECT * FROM sample_table");
+  console.log(results);
+  res.json(results);
 });
 
 app.post("/data", (req, res) => {
-  index++;
-
-  sampleData[index] = `The key of this is ${index}`;
-  res.json(sampleData);
+  let body = req["body"];
+  console.log("POST");
+  console.log(body);
+  res.json({"1": "2"});
 });
 
 app.put("/data", (req, res) => {
-  for(let key in sampleData) {
-    sampleData[key] = "The value has been reset";
-  }
-
-  res.json(sampleData);
+  console.log("PUT");
+  res.json({});
 });
 
 app.delete("/data", (req, res) => {
-  let firstKey = Object.keys(sampleData)[0];
-  delete sampleData[firstKey];
-
-  res.json(sampleData);
-});
-
-app.get("/", async (req, res) => {
-  var string = "A string from the server.";
-
-  res.json({
-    "string": string
-  });
-});
-
-app.get("/about", (req, res) => {
-  res.json({
-    "hello": "world"
-  });
+  console.log("DELETE");
+  res.json({});
 });
 
 app.use((req, res) => {
