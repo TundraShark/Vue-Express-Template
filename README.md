@@ -104,6 +104,7 @@ S3 => Permissions management => PutBucketPolicy
 CloudFront => List => ListDistributions
 CloudFront => Write => CreateDistribution
 CloudFront => Write => CreateInvalidation
+SNS => Write => Publish
 ```
 
 ```
@@ -131,7 +132,8 @@ CloudFront => Write => CreateInvalidation
                 "s3:PutBucketPolicy",
                 "cloudfront:ListDistributions",
                 "cloudfront:CreateDistribution",
-                "cloudfront:CreateInvalidation"
+                "cloudfront:CreateInvalidation",
+                "sns:Publish"
             ],
             "Resource": "*"
         }
