@@ -6,6 +6,23 @@ import App from "./routes/app.vue";
 import Home from "./routes/home.vue";
 import About from "./routes/about.vue";
 
+Vue.config.productionTip = false;
+
+import { plugin } from "vue-function-api";
+import { value } from "vue-function-api";
+
+export default {
+  setup() {
+    const Testing = () => {
+      alert("IT WORKS!");
+    };
+
+    return {Testing};
+  }
+}
+Vue.use(plugin);
+
+
 Vue.use(Router);
 Vue.use(Vuex);
 
