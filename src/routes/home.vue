@@ -1,17 +1,38 @@
 <template>
   <div class="home">
     <h1>This is the home page</h1>
-    <!-- <div class="button" v-on:click="GetData()">Get Data</div> -->
-    <div class="button" @click="GetData">Get Data</div>
-    <div class="button" v-on:click="PostData()">Post Data</div>
-    <div class="button" v-on:click="PutData()">Put Data</div>
-    <div class="button" v-on:click="DeleteData()">Delete Data</div>
+    <table>
+      <tr>
+        <td><div class="button" @click="GetData()">Get Data</div></td>
+      </tr>
+      <tr>
+        <td><div class="button" @click="PostData()">Post Data</div></td>
+        <td><input type="text" v-model="postName" placeholder="Name"></td>
+        <td><input type="text" v-model="postAge"  placeholder="Age"></td>
+      </tr>
+      <tr>
+        <td><div class="button" @click="PutData()">Put Data</div></td>
+        <td><input type="text" v-model="putId"   placeholder="ID"></td>
+        <td><input type="text" v-model="putName" placeholder="Name"></td>
+        <td><input type="text" v-model="putAge"  placeholder="Age"></td>
+      </tr>
+      <tr>
+        <td><div class="button" @click="DeleteData()">Delete Data</div></td>
+        <td><input type="text" v-model="deleteId" placeholder="ID"></td>
+      </tr>
+    </table>
 
-    <table border="1">
-      <template v-for="(val, key) of data">
+    <table border="1" v-if="data">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Age</th>
+      </tr>
+      <template v-for="obj of data">
         <tr>
-          <td>{{ key }}</td>
-          <td>{{ val }}</td>
+          <td>{{ obj.id   }}</td>
+          <td>{{ obj.name }}</td>
+          <td>{{ obj.age  }}</td>
         </tr>
       </template>
     </table>
@@ -20,68 +41,57 @@
 
 <script>
 import {value} from "vue-function-api";
-import Testing as test from "./testing.vue";
 
-export default {
-  setup() {
-    // console.log(test.default.setup)
-    // test.default.Testing();
-    console.log(test);
+export default  {
+  setup(props, {root}) {
+    // console.log(props);
+    // console.log(root.$store.state.yoloTest);
 
-    const data = value([{"a":"b"},{"c":"d"}]);
-    // const data = value([{"a":"b"}]);
-    // const data = value(["Hello", "World"]);
+    const data     = value();
+    const postName = value();
+    const postAge  = value();
+    const putId    = value();
+    const putName  = value();
+    const putAge   = value();
+    const deleteId = value();
 
-    const GetData = () => {
-      console.log("REEEEEEEEEEEEEEEEEEEEEEEEE");
-      Testing();
-      // data = await this.Get("data");
-      // data = Get("data");
-      // console.log(data);
-      console.log("REEEEEEEEEEEEEEEEEEEEEEEEE");
+    const GetData = async () => {
+      data.value = await root.Get("data");
     };
 
+    const PostData = async () => {
+      let body = {
+        name: postName.value,
+        age : postAge.value
+      };
+      data.value = await root.Post("data", body);
+    };
 
+    const PutData = async () => {
+      let body = {
+        id  : putId.value,
+        name: putName.value,
+        age : putAge.value
+      };
+      data.value = await root.Put("data", body);
+    };
 
-    // PostData
-    // PutData
-    // DeleteData
+    const DeleteData = async () => {
+      let params = {
+        id: deleteId.value
+      };
+      data.value = await root.Delete("data", params);
+    };
 
     return {
-      data,
-      GetData
+      data, postName, postAge, putId, putName, putAge, deleteId,
+      GetData,
+      PostData,
+      PutData,
+      DeleteData
     };
   }
 }
-
-// export default {
-//   data: function() {
-//     return {
-//       data: []
-//     }
-//   },
-//   created: async function() {
-//     this.data = {"testing": "Click on the \"Get Data\" button to get sample data"};
-//   },
-//   methods: {
-//     GetData: async function() {
-//       this["data"] = await this.Get("data");
-//       console.log(data);
-//     },
-//     PostData: async function() {
-//       let data = await this.Post("data", {"qwe": 123, "asd": 456});
-//       console.log(data);
-//     },
-//     PutData: async function() {
-//       let data = await this.Put("data", {"uio": 789, "jkl": 555});
-//       console.log(data);
-//     },
-//     DeleteData: async function() {
-//       let data = await this.Delete("data");
-//       console.log(data);
-//     }
-//   }
-// }
 </script>
 
 <style scoped lang="scss">

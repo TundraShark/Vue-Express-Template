@@ -2,29 +2,16 @@ import Vue from "vue";
 import Vuex from "vuex";
 import Router from "vue-router";
 import Axios from "axios";
+import {plugin} from "vue-function-api"; // This has many functions in it, but I only care about "plugin"
 import App from "./routes/app.vue";
 import Home from "./routes/home.vue";
 import About from "./routes/about.vue";
 
-Vue.config.productionTip = false;
-
-import { plugin } from "vue-function-api";
-import { value } from "vue-function-api";
-
-export default {
-  setup() {
-    const Testing = () => {
-      alert("IT WORKS!");
-    };
-
-    return {Testing};
-  }
-}
-Vue.use(plugin);
-
-
 Vue.use(Router);
 Vue.use(Vuex);
+Vue.use(plugin);
+
+Vue.config.productionTip = false;
 
 // Library: Thousands seperator for numbers
 Vue.filter("formatNumber", function(value){return require("numeral")(value).format("0,0");});
@@ -48,8 +35,8 @@ Vue.mixin({
     Read : function(key     ){return this.$store.state[key]},
     Write: function(key, val){this.$store.commit(key, val)},
 
-    Get: async function(endpoint) {
-      let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {withCredentials: true});
+    Get: async function(endpoint, params = {}) {
+      let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params, withCredentials: true});
       return response["data"];
     },
     Post: async function(endpoint, body = {}) {
@@ -60,8 +47,8 @@ Vue.mixin({
       let response = await this.Axios.put(`${process.env.VUE_APP_BACKEND}/${endpoint}`, body, {withCredentials: true});
       return response["data"];
     },
-    Delete: async function(endpoint) {
-      let response = await this.Axios.delete(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {withCredentials: true});
+    Delete: async function(endpoint, params = {}) {
+      let response = await this.Axios.delete(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params, withCredentials: true});
       return response["data"];
     }
   },
@@ -75,6 +62,7 @@ Vue.mixin({
 const store = new Vuex.Store({
   state: {
     // data: {}
+    yoloTest: "Hello there"
   },
   mutations: {
     data   (state, a) {state.data   = a},

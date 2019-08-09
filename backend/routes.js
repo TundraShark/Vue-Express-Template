@@ -18,29 +18,40 @@ app.use(async function(req, res, next) {
 });
 
 app.get("/data", async (req, res) => {
-  console.log("GET");
   let [results] = await db.query("SELECT * FROM sample_table");
-  console.log(results);
   res.json(results);
 });
 
-app.post("/data", (req, res) => {
-  let body = req["body"];
-  console.log("POST");
-  console.log(body);
-  res.json({"1": "2"});
+app.post("/data", async (req, res) => {
+  let name = req["body"]["name"];
+  let age  = req["body"]["age"];
+  let sql  = "INSERT INTO sample_table (name, age) VALUES (?, ?)";
+  let args = [name, age];
+  await db.query(sql, args);
+  let [results] = await db.query("SELECT * FROM sample_table");
+  res.json(results);
 });
 
-app.put("/data", (req, res) => {
-  console.log("PUT");
-  res.json({});
+app.put("/data", async (req, res) => {
+  let id   = req["body"]["id"];
+  let name = req["body"]["name"];
+  let age  = req["body"]["age"];
+  let sql  = "UPDATE sample_table SET name=?, age=? WHERE id=?";
+  let args = [name, age, id];
+  await db.query(sql, args);
+  let [results] = await db.query("SELECT * FROM sample_table");
+  res.json(results);
 });
 
-app.delete("/data", (req, res) => {
-  console.log("DELETE");
-  res.json({});
+app.delete("/data", async (req, res) => {
+  let id   = req["query"]["id"];
+  let sql  = "DELETE FROM sample_table WHERE id=?";
+  let args = [id];
+  await db.query(sql, args);
+  let [results] = await db.query("SELECT * FROM sample_table");
+  res.json(results);
 });
 
 app.use((req, res) => {
-  res.status(404);
+  res.status(404).send();
 });
