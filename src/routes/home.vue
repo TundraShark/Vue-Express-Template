@@ -1,12 +1,13 @@
 <template>
   <div class="home">
-    <h1>This is the home page</h1>
+    <h1>Template Project</h1>
     <table>
       <tr>
         <td><div class="button" @click="GetData()">Get Data</div></td>
       </tr>
       <tr>
         <td><div class="button" @click="PostData()">Post Data</div></td>
+        <td></td>
         <td><input type="text" v-model="postName" placeholder="Name"></td>
         <td><input type="text" v-model="postAge"  placeholder="Age"></td>
       </tr>
