@@ -16,15 +16,7 @@ app.use(bodyParser.urlencoded({"extended": true})); // Setting for bodyParser
 app.use(cookieParser());                            // Enable cookie parsing
 app.use(cors({origin: config["origin"], credentials: true})); // Allow CORS
 
-module.exports.config = config;
-module.exports.db     = mysql.createPool({
-  "host"           : config["mysql"]["host"],
-  "user"           : config["mysql"]["user"],
-  "password"       : config["mysql"]["password"],
-  "database"       : config["mysql"]["database"],
-  "connectionLimit": 20
-}).promise();
-
-// Include the routes/API endpoints and then start the server
-require("./routes.js");
-app.listen(80);
+module.exports.config = config; // Export the configuration to be used by other files
+module.exports.db = new (require("./db.js"))(config["mysql"]); // Include
+require("./routes.js"); // Include the routes/API endpoints
+app.listen(80); // Start the server
