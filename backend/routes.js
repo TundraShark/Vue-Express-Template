@@ -8,11 +8,14 @@ axios.defaults.validateStatus = false;
 app.use(async function(req, res, next) {
   config["secretToken"] = "^VVdum87ujqqxUSF@C*ofA6d3c#k*vxje6&g7iXtNgLnVvj#Kl%uDq!9YbdE2FGI";
 
+  // res.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost");
+
   // Authenticate the client
   if(req["cookies"]["secret-token"] == config["secretToken"]) {
     next();
   } else {
-    res.status(401).send();
+    next();//res.status(401).send();
   }
 });
 

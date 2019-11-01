@@ -2,14 +2,16 @@ import Vue from "vue";
 import Vuex from "vuex";
 import Router from "vue-router";
 import Axios from "axios";
-import {plugin} from "vue-function-api"; // This has many functions in it, but I only care about "plugin"
+// import VueFunctionApi from "vue-function-api";
+import VueCompositionApi from "@vue/composition-api";
 import App from "./routes/app.vue";
 import Home from "./routes/home.vue";
 import About from "./routes/about.vue";
 
 Vue.use(Router);
 Vue.use(Vuex);
-Vue.use(plugin);
+// Vue.use(VueFunctionApi);
+Vue.use(VueCompositionApi);
 
 Vue.config.productionTip = false;
 
@@ -36,7 +38,10 @@ Vue.mixin({
     Write: function(key, val){this.$store.commit(key, val)},
 
     Get: async function(endpoint, params = {}) {
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!");
       let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params, withCredentials: true});
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!");
+      console.log(response["data"]);
       return response["data"];
     },
     Post: async function(endpoint, body = {}) {
