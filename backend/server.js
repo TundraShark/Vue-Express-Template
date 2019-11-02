@@ -14,14 +14,7 @@ app.use(express.static("./static"));                // Define the static directo
 app.use(bodyParser.json());                         // Setting for bodyParser
 app.use(bodyParser.urlencoded({"extended": true})); // Setting for bodyParser
 app.use(cookieParser());                            // Enable cookie parsing
-// app.use(cors({origin: config["origin"], credentials: true})); // Allow CORS
-// app.use(cors());
-// app.use(cors({
-//   // origin: "http://localhost"
-//   "allowedHeaders": ["Content-Type"],
-//   "origin": "*",
-//   "preflightContinue": true
-// }));
+app.use(cors({origin: ["http://localhost:8080", "http://localhost"]})); // Allow CORS
 
 module.exports.config = config; // Export the configuration to be used by other files
 module.exports.db = new (require("./db.js"))(config["mysql"]); // Include

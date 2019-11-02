@@ -38,22 +38,19 @@ Vue.mixin({
     Write: function(key, val){this.$store.commit(key, val)},
 
     Get: async function(endpoint, params = {}) {
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!");
-      let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params, withCredentials: true});
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!");
-      console.log(response["data"]);
+      let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params});
       return response["data"];
     },
     Post: async function(endpoint, body = {}) {
-      let response = await this.Axios.post(`${process.env.VUE_APP_BACKEND}/${endpoint}`, body, {withCredentials: true});
+      let response = await this.Axios.post(`${process.env.VUE_APP_BACKEND}/${endpoint}`, body, {});
       return response["data"];
     },
     Put: async function(endpoint, body = {}) {
-      let response = await this.Axios.put(`${process.env.VUE_APP_BACKEND}/${endpoint}`, body, {withCredentials: true});
+      let response = await this.Axios.put(`${process.env.VUE_APP_BACKEND}/${endpoint}`, body, {});
       return response["data"];
     },
     Delete: async function(endpoint, params = {}) {
-      let response = await this.Axios.delete(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params, withCredentials: true});
+      let response = await this.Axios.delete(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params});
       return response["data"];
     }
   },
