@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home-2">
     <h1>Template Project</h1>
     <table>
       <tr>
@@ -41,28 +41,26 @@
 </template>
 
 <script>
-import {reactive, toRefs} from "@vue/composition-api";
+import {ref} from "@vue/composition-api";
 
 export default {
   setup(props, {root}) {
-    const state = reactive({
-      data: null,
-      postName: null,
-      postAge: null,
-      putId: null,
-      putName: null,
-      putAge: null,
-      deleteId: null,
-    });
+    const data     = ref(null);
+    const postName = ref(null);
+    const postAge  = ref(null);
+    const putId    = ref(null);
+    const putName  = ref(null);
+    const putAge   = ref(null);
+    const deleteId = ref(null);
 
     const GetData = async () => {
-      state.data = await root.Get("data");
+      data.value = await root.Get("data");
     };
 
     const PostData = async () => {
       let body = {
-        name: state.postName,
-        age : state.postAge
+        name: postName,
+        age : postAge
       };
       await root.Post("data", body);
       await GetData();
@@ -70,9 +68,9 @@ export default {
 
     const PutData = async () => {
       let body = {
-        id  : state.putId,
-        name: state.putName,
-        age : state.putAge
+        id  : putId,
+        name: putName,
+        age : putAge
       };
       await root.Put("data", body);
       await GetData();
@@ -80,14 +78,14 @@ export default {
 
     const DeleteData = async () => {
       let params = {
-        id: state.deleteId
+        id: deleteId
       };
       await root.Delete("data", params);
       await GetData();
     };
 
     return {
-      ...toRefs(state),
+      data, postName, postAge, putId, putName, putAge, deleteId,
       GetData,
       PostData,
       PutData,

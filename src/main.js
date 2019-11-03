@@ -6,6 +6,7 @@ import Axios from "axios";
 import VueCompositionApi from "@vue/composition-api";
 import App from "./routes/app.vue";
 import Home from "./routes/home.vue";
+import Home2 from "./routes/home-2.vue";
 import About from "./routes/about.vue";
 
 Vue.use(Router);
@@ -24,6 +25,9 @@ const router = new Router({
   routes: [{
     path: "/",
     component: Home
+   },{
+    path: "/home-2",
+    component: Home2
    },{
     path: "/about",
     component: About
