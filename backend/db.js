@@ -14,7 +14,8 @@ class DB {
     try {
       return (await this.db.query(sql, args))[0];
     } catch(error) {
-      return {error: `${error["code"]} [${error["errno"]}]: ${error["message"]}`};
+      console.log(`${error["code"]} [${error["errno"]}]: ${error["message"]}`);
+      return {error: "SQL Error"};
     }
   }
 
