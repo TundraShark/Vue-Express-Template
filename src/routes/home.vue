@@ -23,6 +23,8 @@
       </tr>
     </table>
 
+    {{ test }}
+
     <table border="1" v-if="data">
       <tr>
         <th>ID</th>
@@ -46,6 +48,7 @@ import {reactive, toRefs} from "@vue/composition-api";
 export default {
   setup(props, {root}) {
     const state = reactive({
+      test: root.Read("yoloTest"),
       data: null,
       postName: null,
       postAge: null,
@@ -57,6 +60,9 @@ export default {
 
     const GetData = async () => {
       state.data = await root.Get("data");
+      console.log(state.data);
+      root.Commit("yoloTest", state.data);
+      state.test = root.Read("yoloTest");
     };
 
     const PostData = async () => {

@@ -1,29 +1,31 @@
 <template>
   <div class="about">
     <h1>This is an about page</h1>
+
+    {{ test }}
   </div>
 </template>
 
 <script>
+import {reactive, toRefs} from "@vue/composition-api";
+
 export default {
-  data: function(){
-    return {
-      data: null
-    }
-  },
-  created: async function() {
-    this.$store.subscribe((mutation) => {
-      if(mutation.type == "gohere") {
-        this.discordAuthUrl = mutation.payload;
-      } else if(mutation.type = "data") {
-        this.data = mutation.payload;
-        console.log(this.data);
+  setup(props, {root}) {
+    const state = reactive({
+      test: root.Read("yoloTest") || "||||||||||||"
+    });
+
+    root.$store.subscribe((mutation) => {
+      let key = mutation.payload.key;
+      let val = mutation.payload.val;
+
+      if (key == "yoloTest") {
+        state.test = val;
       }
     });
-  },
-  methods: {
-    MyFunction: async function() {
 
+    return {
+      ...toRefs(state)
     }
   }
 }

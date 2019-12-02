@@ -32,8 +32,10 @@ const router = new Router({
 Vue.mixin({
   // Define basic functions that allow easy usage of reading and writing from the data store
   methods: {
-    Read : function(key     ){return this.$store.state[key]},
-    Write: function(key, val){this.$store.commit(key, val)},
+    Read    : function(key     ){return this.$store.state[key]},
+    Commit  : function(key, val){this.$store.commit  ("mutation", {key: key, val: val})}, // Synchronous
+    Dispatch: function(key, val){this.$store.dispatch("mutation", {key: key, val: val})}, // Asynchronous
+    // https://stackoverflow.com/questions/40390411/vuex-2-0-dispatch-versus-commit
 
     Get: async function(endpoint, params = {}) {
       let response = await this.Axios.get(`${process.env.VUE_APP_BACKEND}/${endpoint}`, {params: params});
@@ -61,12 +63,15 @@ Vue.mixin({
 // Define data that will be used across the entire application
 const store = new Vuex.Store({
   state: {
-    // data: {}
-    yoloTest: "Hello there"
+    // yoloTest: "Hello there"
+    yoloTest: null
   },
   mutations: {
-    data   (state, a) {state.data   = a},
-    gohere (state, a) {state.gohere = a}
+    mutation(state, data){
+      let key = data["key"];
+      let val = data["val"];
+      state[key] = val;
+    }
   }
 });
 
