@@ -42,6 +42,13 @@
 
 <script>
 import {ref} from "@vue/composition-api";
+/* Advantages to using {ref} over {reactive, toRefs}
+ * 1. Don't need to prepend state. to every single variable
+ *
+ * Disadvantages to using {ref} instead of {reactive, toRefs}
+ * 1. Whenever you want to modify a variable, you must use .value
+ * 2. Must manually list all variables in the return statement
+ */
 
 export default {
   setup(props, {root}) {
