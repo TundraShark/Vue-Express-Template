@@ -1,4 +1,5 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const PreloadWebpackPlugin = require("preload-webpack-plugin");
 const path = require("path");
 
 if     (process.env.local)                     process.env.VUE_APP_BACKEND = "http://localhost";
@@ -10,6 +11,7 @@ module.exports = {
     port: 8080
   },
   configureWebpack: {
+    entry: "./src/main.ts",
     plugins: [
       new CopyWebpackPlugin([{
         from: "./src/public",
@@ -17,7 +19,11 @@ module.exports = {
         to: ".",
         toType: "dir"
         // ,ignore: [ "index.html"]
-      }])
+      }]),
+      new PreloadWebpackPlugin({
+        rel: "preload",
+        as: "script"
+      })
     ]
   },
   chainWebpack: (config) => {

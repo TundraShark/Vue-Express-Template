@@ -12,6 +12,8 @@ Vue.use(VueCompositionApi);
 
 Vue.config.productionTip = false;
 
+() => import("./routes/about.vue");
+
 // Library: Thousands seperator for numbers
 Vue.filter("formatNumber", function(value){return require("numeral")(value).format("0,0");});
 
@@ -23,9 +25,27 @@ const router = new Router({
     component: () => import("./routes/home.vue")
    },{
     path: "/about",
-    // component: () => import("./routes/about.vue")
-    component: AsyncRoutes.dashboard
+    component: () => import("./routes/about.vue")
+    // component: AsyncRoutes.dashboard
   }]
+});
+
+router.beforeEach((to, from, next) => {
+  console.log(to);
+  console.log(from);
+  next();
+  // if (to.matched.some(route => route.meta.requiresAuth)) {
+  //   store.state.authStatus.then(() => {
+  //     //we're getting 200 status code response here, so user is authorized
+  //     //be sure that API you're consuming return correct status code when user is authorized
+  //     next()
+  //   }).catch(() => {
+  //     //we're getting anything but not 200 status code response here, so user is not authorized
+  //     next({name: 'home'})
+  //   })
+  // } else {
+  //   next()
+  // }
 });
 
 // Everything defined in Vue.mixin will be created in every Vue instance, effectively making these global methods and variables
