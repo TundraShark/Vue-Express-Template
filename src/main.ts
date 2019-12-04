@@ -4,8 +4,7 @@ import Router from "vue-router";
 import Axios from "axios";
 import VueCompositionApi from "@vue/composition-api";
 import App from "./routes/app.vue";
-import Home from "./routes/home.vue";
-import About from "./routes/about.vue";
+import AsyncRoutes from "./routes/async-routes.ts";
 
 Vue.use(Router);
 Vue.use(Vuex);
@@ -21,10 +20,11 @@ const router = new Router({
   // mode: "abstract",
   routes: [{
     path: "/",
-    component: Home
+    component: () => import("./routes/home.vue")
    },{
     path: "/about",
-    component: About
+    // component: () => import("./routes/about.vue")
+    component: AsyncRoutes.dashboard
   }]
 });
 
@@ -79,5 +79,14 @@ const store = new Vuex.Store({
 new Vue({
   store : store,
   router: router,
-  render: (a) => a(App),
+  render: (a) => a(App)
+  // ,created: async () => {
+  //   () => import("./routes/about.vue")
+  // }
+
+  //   console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+  //   let qwe = await Axios.get("http://localhost:8080/about");
+  //   console.log(qwe);
+  //   console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+  // }
 }).$mount("#app");
