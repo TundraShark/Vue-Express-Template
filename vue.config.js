@@ -1,5 +1,7 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const PreloadWebpackPlugin = require("preload-webpack-plugin");
+// const PreloadWebpackPlugin = require("preload-webpack-plugin");
+// var PrerenderSpaPlugin = require("prerender-spa-plugin");
+// const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin");
 const path = require("path");
 
 if     (process.env.local)                     process.env.VUE_APP_BACKEND = "http://localhost";
@@ -20,10 +22,26 @@ module.exports = {
         toType: "dir"
         // ,ignore: [ "index.html"]
       }]),
-      new PreloadWebpackPlugin({
-        rel: "preload",
-        as: "script"
-      })
+
+      // new PrerenderSpaPlugin({
+      //   staticDir: path.join(__dirname, "dist"), // Absolute path to compiled SPA
+      //   // outputDir: path.join(__dirname, "prerendered"),
+      //   routes: ["/about"] // List of routes to prerender
+      // })
+
+      // new PreloadWebpackPlugin({
+      //   rel: "preload",
+      //   include: "all"
+
+      //   // rel: "prefetch",
+      //   // include: {
+      //   //   type: "asyncChunks",
+      //   //   entries: ["about"]
+      //   // }
+
+      //   // rel: "preload",
+      //   // as: "script"
+      // })
     ]
   },
   chainWebpack: (config) => {

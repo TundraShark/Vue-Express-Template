@@ -16,13 +16,13 @@
 </template>
 
 <script>
-const lazyComponent = () => import("./about.vue");
+// const lazyComponent = () => import("./about.vue");
 
-export default {
-  setup(props, {root}) {
-    // TODO
-  }
-}
+// export default {
+//   setup(props, {root}) {
+//     // TODO
+//   }
+// }
 </script>
 
 <style lang="scss">
