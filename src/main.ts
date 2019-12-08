@@ -13,7 +13,6 @@ Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 
 // () => import("./routes/about.vue");
-const Foo = () => import("./routes/about.vue");
 
 // Library: Thousands seperator for numbers
 Vue.filter("formatNumber", function(value){return require("numeral")(value).format("0,0");});
@@ -26,8 +25,7 @@ const router = new Router({
     component: () => import("./routes/home.vue")
    },{
     path: "/about",
-    component: Foo
-    // component: () => import("./routes/about.vue")
+    component: () => import("./routes/about.vue")
     // component: AsyncRoutes.dashboard
   }]
 });
